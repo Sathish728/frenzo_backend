@@ -1,96 +1,64 @@
-import { OTPService } from '../services/otp.service.js';
 import { User } from '../models/User.model.js';
 import jwt from 'jsonwebtoken';
 import { config } from '../config/env.js';
+import { verifyFirebaseToken } from '../config/firebase.js';
 import { ApiResponse } from '../utils/apiResponse.js';
 import { ApiError } from '../utils/apiError.js';
 import { HTTP_STATUS } from '../config/constants.js';
 import { logger } from '../config/logger.js';
-import { helpers } from '../utils/helpers.js';
-
-const otpService = new OTPService();
 
 export class AuthController {
-  // Send OTP (Phone or Email)
-  static async sendOTP(req, res, next) {
+  // Firebase Phone Auth - Verify Token and Login/Register
+  static async verifyFirebaseToken(req, res, next) {
     try {
-      const { identifier, type } = req.body; // type: 'phone' or 'email'
+      const { idToken, role } = req.body;
 
-      // Validate type
-      if (!type || !['phone', 'email'].includes(type)) {
-        throw new ApiError(HTTP_STATUS.BAD_REQUEST, 'Type must be phone or email');
+      if (!idToken || !role) {
+        throw new ApiError(
+          HTTP_STATUS.BAD_REQUEST,
+          'Firebase ID token and role are required'
+        );
       }
 
-      // Sanitize identifier
-      const cleanIdentifier = type === 'phone' 
-        ? helpers.sanitizePhone(identifier)
-        : identifier.toLowerCase().trim();
+      // Verify Firebase token
+      const decodedToken = await verifyFirebaseToken(idToken);
+      const phoneNumber = decodedToken.phone_number;
 
-      // Send OTP
-      await otpService.sendOTP(cleanIdentifier, type);
-
-      logger.info(`OTP sent to ${cleanIdentifier} via ${type}`);
-
-      res
-        .status(HTTP_STATUS.OK)
-        .json(
-          new ApiResponse(
-            HTTP_STATUS.OK,
-            { type },
-            `OTP sent successfully via ${type}`
-          )
+      if (!phoneNumber) {
+        throw new ApiError(
+          HTTP_STATUS.BAD_REQUEST,
+          'Phone number not found in token'
         );
-    } catch (error) {
-      next(error);
-    }
-  }
+      }
 
-  // Verify OTP and Login/Register
-  static async verifyOTP(req, res, next) {
-    try {
-      const { identifier, otp, type, role, name } = req.body;
+      // Normalize phone number (remove +91 or +)
+      const normalizedPhone = phoneNumber.replace(/^\+/, '');
 
-      // Sanitize identifier
-      const cleanIdentifier = type === 'phone'
-        ? helpers.sanitizePhone(identifier)
-        : identifier.toLowerCase().trim();
+      // Check if user exists
+      let user = await User.findOne({ phone: normalizedPhone });
 
-      // Verify OTP
-      await otpService.verifyOTP(cleanIdentifier, otp);
-
-      // Find user by phone or email
-      const query = type === 'phone' 
-        ? { phone: cleanIdentifier }
-        : { email: cleanIdentifier };
-
-      let user = await User.findOne(query);
-
-      // New user - need registration
       if (!user) {
-        if (!role || !name) {
-          return res.status(HTTP_STATUS.OK).json(
-            new ApiResponse(
-              HTTP_STATUS.OK,
-              { isNewUser: true },
-              'Please complete registration'
-            )
-          );
-        }
-
         // Create new user
-        const userData = {
-          authType: type,
+        user = await User.create({
+          phone: normalizedPhone,
+          authType: 'phone',
           role,
-          name,
-        };
+          name: `User${Date.now()}`, // Temporary name
+          firebaseUid: decodedToken.uid,
+          isVerified: true,
+        });
 
-        if (type === 'phone') {
-          userData.phone = cleanIdentifier;
-        } else {
-          userData.email = cleanIdentifier;
+        logger.info(`New user registered: ${user._id}`);
+      } else {
+        // Update Firebase UID if needed
+        if (!user.firebaseUid) {
+          user.firebaseUid = decodedToken.uid;
+          await user.save();
         }
 
-        user = await User.create(userData);
+        // Update last login
+        user.lastLogin = new Date();
+        await user.save();
       }
 
       // Check if banned
@@ -98,18 +66,14 @@ export class AuthController {
         throw new ApiError(HTTP_STATUS.FORBIDDEN, 'Account has been banned');
       }
 
-      // Update last login
-      user.lastLogin = new Date();
-      await user.save();
-
-      // Generate JWT token
+      // Generate JWT token for app
       const token = jwt.sign(
         { userId: user._id, role: user.role },
         config.jwt.secret,
         { expiresIn: config.jwt.expiresIn }
       );
 
-      logger.info(`User ${user._id} authenticated via ${type}`);
+      logger.info(`User ${user._id} authenticated via Firebase`);
 
       res.status(HTTP_STATUS.OK).json(
         new ApiResponse(
@@ -119,44 +83,64 @@ export class AuthController {
             user: {
               id: user._id,
               phone: user.phone,
-              email: user.email,
-              name: user.name,
               role: user.role,
-              coins: user.coins,
+              name: user.name,
               profileImage: user.profileImage,
-              authType: user.authType,
+              coins: user.coins,
+              isNewUser: !user.name || user.name.startsWith('User'),
             },
           },
-          'Login successful'
+          'Authentication successful'
         )
       );
     } catch (error) {
-      next(error);
+      logger.error('Firebase verification error:', error);
+      next(
+        new ApiError(
+          HTTP_STATUS.UNAUTHORIZED,
+          error.message || 'Invalid or expired token'
+        )
+      );
     }
   }
 
-  // Resend OTP
-  static async resendOTP(req, res, next) {
+  // Refresh Token
+  static async refreshToken(req, res, next) {
     try {
-      const { identifier, type } = req.body;
+      const { userId } = req.user;
+      const user = await User.findById(userId);
 
-      const cleanIdentifier = type === 'phone'
-        ? helpers.sanitizePhone(identifier)
-        : identifier.toLowerCase().trim();
+      if (!user) {
+        throw new ApiError(HTTP_STATUS.NOT_FOUND, 'User not found');
+      }
 
-      await otpService.resendOTP(cleanIdentifier, type);
+      if (user.isBanned) {
+        throw new ApiError(HTTP_STATUS.FORBIDDEN, 'Account has been banned');
+      }
 
-      logger.info(`OTP resent to ${cleanIdentifier} via ${type}`);
+      const token = jwt.sign(
+        { userId: user._id, role: user.role },
+        config.jwt.secret,
+        { expiresIn: config.jwt.expiresIn }
+      );
 
-      res
-        .status(HTTP_STATUS.OK)
-        .json(
-          new ApiResponse(
-            HTTP_STATUS.OK,
-            null,
-            'OTP resent successfully'
-          )
-        );
+      res.json(
+        new ApiResponse(
+          HTTP_STATUS.OK,
+          {
+            token,
+            user: {
+              id: user._id,
+              phone: user.phone,
+              role: user.role,
+              name: user.name,
+              profileImage: user.profileImage,
+              coins: user.coins,
+            },
+          },
+          'Token refreshed'
+        )
+      );
     } catch (error) {
       next(error);
     }

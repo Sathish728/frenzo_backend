@@ -37,3 +37,15 @@
 2025-12-01 17:11:22 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
 2025-12-01 17:11:24 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
 2025-12-01 23:36:25 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-03 10:57:48 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-03 10:57:48 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-03 10:57:48 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-03 10:57:48 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-03 10:57:48 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-03 10:57:49 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-03 11:13:02 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-03 11:13:03 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-03 11:13:03 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-03 11:13:03 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-03 11:13:03 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-03 11:13:04 [32minfo[39m: [32m✅ MongoDB connected successfully[39m

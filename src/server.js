@@ -2,6 +2,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import app from './app.js';
 import { connectDatabase } from './config/database.js';
+import { initializeFirebase } from './config/firebase.js';
 import { config } from './config/env.js';
 import { logger } from './config/logger.js';
 import { setupSocketHandlers } from './websocket/socketHandler.js';
@@ -22,6 +23,9 @@ const io = new Server(server, {
 
 // Setup socket handlers
 setupSocketHandlers(io);
+
+// Initialize Firebase
+initializeFirebase();
 
 // Connect to database
 connectDatabase();

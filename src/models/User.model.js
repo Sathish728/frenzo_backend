@@ -5,19 +5,19 @@ const userSchema = new mongoose.Schema(
   {
     phone: {
       type: String,
-      sparse: true,
+      required: true,
+      unique: true,
       trim: true,
+      index: true,
     },
-    email: {
+    firebaseUid: {
       type: String,
       sparse: true,
-      trim: true,
-      lowercase: true,
     },
     authType: {
       type: String,
-      enum: ['phone', 'email'],
-      required: true,
+      enum: ['phone'],
+      default: 'phone',
     },
     role: {
       type: String,
@@ -48,6 +48,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
     isBanned: {
       type: Boolean,
       default: false,
@@ -70,6 +74,7 @@ const userSchema = new mongoose.Schema(
     toJSON: {
       transform: (doc, ret) => {
         delete ret.socketId;
+        delete ret.firebaseUid;
         delete ret.__v;
         return ret;
       },
@@ -79,13 +84,14 @@ const userSchema = new mongoose.Schema(
 
 // Indexes
 userSchema.index({ phone: 1 });
-userSchema.index({ email: 1 });
+userSchema.index({ firebaseUid: 1 });
 userSchema.index({ role: 1, isOnline: 1, isAvailable: 1, isBanned: 1 });
 
 // Instance methods
 userSchema.methods.toSafeObject = function () {
   const user = this.toObject();
   delete user.socketId;
+  delete user.firebaseUid;
   return user;
 };
 

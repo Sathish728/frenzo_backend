@@ -24,19 +24,11 @@ export const config = {
     expiresIn: process.env.JWT_EXPIRES_IN || '30d',
   },
 
-  // MSG91 Configuration
-  msg91: {
-    authKey: process.env.MSG91_AUTH_KEY,
-    senderId: process.env.MSG91_SENDER_ID || 'MSGIND',
-    route: process.env.MSG91_ROUTE || '4',
-    dltTemplateId: process.env.MSG91_DLT_TEMPLATE_ID,
-  },
-
-  // SendGrid Configuration
-  sendgrid: {
-    apiKey: process.env.SENDGRID_API_KEY,
-    fromEmail: process.env.SENDGRID_FROM_EMAIL,
-    fromName: process.env.SENDGRID_FROM_NAME || 'Calling App',
+  // Firebase Admin SDK Configuration
+  firebase: {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
   },
 
   razorpay: {

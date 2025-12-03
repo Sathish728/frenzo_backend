@@ -1,23 +1,16 @@
 import Joi from 'joi';
 
 export const validators = {
-  // Auth validation
-  sendOTP: Joi.object({
-    identifier: Joi.string().required(),
-    type: Joi.string().valid('phone', 'email').required(),
-  }),
-
-  verifyOTP: Joi.object({
-    identifier: Joi.string().required(),
-    otp: Joi.string().length(6).required(),
-    type: Joi.string().valid('phone', 'email').required(),
-    role: Joi.string().valid('men', 'women'),
-    name: Joi.string().min(2).max(50),
-  }),
-
-  resendOTP: Joi.object({
-    identifier: Joi.string().required(),
-    type: Joi.string().valid('phone', 'email').required(),
+  // Firebase Auth validation
+  firebaseVerify: Joi.object({
+    idToken: Joi.string().required().messages({
+      'string.empty': 'Firebase ID token is required',
+      'any.required': 'Firebase ID token is required',
+    }),
+    role: Joi.string().valid('men', 'women').required().messages({
+      'any.only': 'Role must be either men or women',
+      'any.required': 'Role is required',
+    }),
   }),
 
   // User validation
@@ -53,4 +46,4 @@ export const validators = {
         'string.pattern.base': 'Please enter a valid UPI ID',
       }),
   }),
-};
+}

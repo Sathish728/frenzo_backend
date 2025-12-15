@@ -49,3 +49,202 @@
 2025-12-03 11:13:03 [32minfo[39m: [32m📝 Environment: development[39m
 2025-12-03 11:13:03 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
 2025-12-03 11:13:04 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-03 14:22:57 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-03 14:22:57 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-03 14:22:57 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-03 14:22:57 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-03 14:22:57 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-03 14:22:58 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-03 17:33:41 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-03 17:33:41 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-03 17:33:41 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-03 17:33:41 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-03 17:33:41 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-03 17:33:43 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-08 00:22:19 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-08 00:22:19 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-08 00:22:19 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-08 00:22:19 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-08 00:22:19 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-08 00:22:22 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-12 22:49:53 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-12 22:49:54 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-12 22:49:54 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-12 22:49:54 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-12 22:49:54 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-12 22:49:55 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-12 22:58:17 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-12 22:59:38 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-12 23:06:41 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-12 23:06:41 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-12 23:06:41 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-12 23:06:41 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-12 23:06:41 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-12 23:06:42 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-12 23:29:13 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-12 23:29:13 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-12 23:29:13 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-12 23:29:13 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-12 23:29:13 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-13 00:40:08 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-13 00:40:08 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-13 00:40:08 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-13 00:40:08 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-13 00:40:08 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-13 00:40:09 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-13 00:58:33 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-13 00:58:33 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-13 00:58:33 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-13 00:58:33 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-13 00:58:33 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-13 00:58:34 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-13 01:21:49 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-13 01:21:49 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-13 01:21:49 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-13 01:21:49 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-13 01:21:49 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-13 01:21:51 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-13 01:28:37 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-13 01:28:37 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-13 01:28:37 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-13 01:28:37 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-13 01:28:37 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-13 11:06:58 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-13 11:06:58 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-13 11:06:58 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-13 11:06:58 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-13 11:06:58 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-13 11:06:59 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-13 16:27:36 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-13 16:29:20 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-13 16:29:20 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-13 16:29:20 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-13 16:29:20 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-13 16:29:20 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-13 16:29:24 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-13 18:40:21 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-13 18:46:42 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-13 19:14:45 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-13 20:59:27 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-13 21:08:28 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-13 21:10:36 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-13 21:29:01 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-13 21:31:09 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-13 22:03:30 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-14 23:22:58 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-14 23:22:59 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-14 23:22:59 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-14 23:22:59 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-14 23:22:59 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-14 23:22:59 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-14 23:23:26 [31merror[39m: [31m404 - Route /api/api/auth/firebase-verify not found[39m
+2025-12-14 23:24:04 [31merror[39m: [31m404 - Route /api/api/auth/firebase-verify not found[39m
+2025-12-14 23:24:22 [31merror[39m: [31m404 - Route /api/api/auth/firebase-verify not found[39m
+2025-12-14 23:31:27 [32minfo[39m: [32mNew user registered: 693efb7750c80bf5063fa915[39m
+2025-12-14 23:31:27 [32minfo[39m: [32mUser 693efb7750c80bf5063fa915 authenticated via Firebase[39m
+2025-12-14 23:32:05 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-14 23:32:29 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-14 23:32:39 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-14 23:33:23 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-14 23:33:26 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-14 23:33:29 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-14 23:33:54 [32minfo[39m: [32mNew user registered: 693efc0a50c80bf5063fa918[39m
+2025-12-14 23:33:54 [32minfo[39m: [32mUser 693efc0a50c80bf5063fa918 authenticated via Firebase[39m
+2025-12-14 23:34:05 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-14 23:34:48 [32minfo[39m: [32mUser 693efc0a50c80bf5063fa918 authenticated via Firebase[39m
+2025-12-14 23:35:28 [32minfo[39m: [32mUser 693efc0a50c80bf5063fa918 authenticated via Firebase[39m
+2025-12-14 23:36:05 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-14 23:36:28 [32minfo[39m: [32mNew user registered: 693efca450c80bf5063fa91f[39m
+2025-12-14 23:36:28 [32minfo[39m: [32mUser 693efca450c80bf5063fa91f authenticated via Firebase[39m
+2025-12-14 23:46:44 [31merror[39m: [31m404 - Route /auth/firebase-verify not found[39m
+2025-12-14 23:59:00 [32minfo[39m: [32m⏰ Starting weekly payout process...[39m
+2025-12-14 23:59:01 [32minfo[39m: [32m✅ Weekly payout process completed. Success: 0, Failed: 0[39m
+2025-12-15 00:07:51 [31merror[39m: [31m404 - Route /auth/firebase-verify not found[39m
+2025-12-15 00:11:53 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-15 00:11:53 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-15 00:11:53 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-15 00:11:53 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-15 00:11:53 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-15 00:11:55 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-15 10:11:15 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-15 10:11:15 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-15 10:11:15 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-15 10:11:15 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-15 10:11:15 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-15 10:11:16 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-15 10:11:53 [31merror[39m: [31m404 - Route /auth/firebase-verify not found[39m
+2025-12-15 10:15:11 [32minfo[39m: [32mNew user registered: 693f9257d312cfc3eff9dbff[39m
+2025-12-15 10:15:11 [32minfo[39m: [32mUser 693f9257d312cfc3eff9dbff authenticated via Firebase[39m
+2025-12-15 10:15:47 [32minfo[39m: [32mNew user registered: 693f927bd312cfc3eff9dc02[39m
+2025-12-15 10:15:47 [32minfo[39m: [32mUser 693f927bd312cfc3eff9dc02 authenticated via Firebase[39m
+2025-12-15 10:17:12 [32minfo[39m: [32mUser 693f9257d312cfc3eff9dbff authenticated via Firebase[39m
+2025-12-15 10:22:13 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-15 10:22:13 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-15 10:22:13 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-15 10:22:13 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-15 10:22:13 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-15 10:22:14 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-15 10:25:25 [32minfo[39m: [32mNew user registered: 693f94bcedb472bf8c913cda[39m
+2025-12-15 10:25:25 [32minfo[39m: [32mUser 693f94bcedb472bf8c913cda authenticated via Firebase[39m
+2025-12-15 10:27:23 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 10:27:29 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 10:27:49 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 10:32:46 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 10:33:00 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 11:06:04 [32minfo[39m: [32mNew user registered: 693f9e44edb472bf8c913cdd[39m
+2025-12-15 11:06:04 [32minfo[39m: [32mUser 693f9e44edb472bf8c913cdd authenticated via Firebase[39m
+2025-12-15 11:06:45 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 11:07:53 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 11:27:02 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 11:27:04 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 11:29:27 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-15 11:29:27 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-15 11:29:28 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-15 11:29:28 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-15 11:29:28 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-15 11:29:31 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-15 11:30:13 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 11:30:57 [31merror[39m: [31mFirebase verification error: NEW_USER_REQUIRED[39m
+2025-12-15 11:30:57 [31merror[39m: [31m404 - NEW_USER_REQUIRED[39m
+2025-12-15 11:31:20 [32minfo[39m: [32mNew user registered: 693fa43081d2ba546f134a17 as men[39m
+2025-12-15 11:31:21 [32minfo[39m: [32mSocket connected: AKREtw73QDfMHWNpAAAB[39m
+2025-12-15 11:31:31 [32minfo[39m: [32mOrder created: order_RrmTmiEEry0Kil[39m
+2025-12-15 11:31:31 [32minfo[39m: [32mOrder created: order_RrmTmiEEry0Kil for user 693fa43081d2ba546f134a17[39m
+2025-12-15 11:31:51 [32minfo[39m: [32mOrder created: order_RrmU8PU1etaWH3[39m
+2025-12-15 11:31:51 [32minfo[39m: [32mOrder created: order_RrmU8PU1etaWH3 for user 693fa43081d2ba546f134a17[39m
+2025-12-15 11:32:56 [32minfo[39m: [32mSocket disconnected: AKREtw73QDfMHWNpAAAB[39m
+2025-12-15 11:33:59 [32minfo[39m: [32mSocket connected: GePBBBVKkfjhr0hfAAAD[39m
+2025-12-15 11:34:03 [32minfo[39m: [32mOrder created: order_RrmWRyfxcL794Y[39m
+2025-12-15 11:34:03 [32minfo[39m: [32mOrder created: order_RrmWRyfxcL794Y for user 693fa43081d2ba546f134a17[39m
+2025-12-15 11:34:10 [32minfo[39m: [32mSocket disconnected: GePBBBVKkfjhr0hfAAAD[39m
+2025-12-15 11:39:02 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-15 11:39:02 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-15 11:39:02 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-15 11:39:02 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-15 11:39:02 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-15 11:39:03 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-15 11:44:57 [32minfo[39m: [32mSocket connected: a2VI6xMnLpKZYXAoAAAB[39m
+2025-12-15 11:45:32 [32minfo[39m: [32mSocket disconnected: a2VI6xMnLpKZYXAoAAAB[39m
+2025-12-15 11:46:13 [31merror[39m: [31mFirebase verification error: NEW_USER_REQUIRED[39m
+2025-12-15 11:46:13 [31merror[39m: [31m404 - NEW_USER_REQUIRED[39m
+2025-12-15 11:46:24 [32minfo[39m: [32mNew user registered: 693fa7b72fbe80b8197a81ba as women[39m
+2025-12-15 11:46:25 [32minfo[39m: [32mSocket connected: qNWfIbbcQua95MWwAAAD[39m
+2025-12-15 11:46:28 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 11:46:31 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 11:46:53 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 11:46:55 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 11:47:35 [32minfo[39m: [32mSocket disconnected: qNWfIbbcQua95MWwAAAD[39m
+2025-12-15 11:47:51 [32minfo[39m: [32mExisting user 693fa43081d2ba546f134a17 logged in[39m
+2025-12-15 11:47:51 [32minfo[39m: [32mSocket connected: iRu3-1viYE8supJOAAAF[39m
+2025-12-15 11:48:47 [32minfo[39m: [32mSocket disconnected: iRu3-1viYE8supJOAAAF[39m
+2025-12-15 11:49:10 [32minfo[39m: [32mExisting user 693fa7b72fbe80b8197a81ba logged in[39m
+2025-12-15 11:49:11 [32minfo[39m: [32mSocket connected: 36Zs29-5O9NS28hyAAAH[39m
+2025-12-15 11:49:14 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 11:49:18 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 11:49:45 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 11:51:51 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 11:52:07 [32minfo[39m: [32mSocket disconnected: 36Zs29-5O9NS28hyAAAH[39m
+2025-12-15 11:52:24 [32minfo[39m: [32mExisting user 693fa7b72fbe80b8197a81ba logged in[39m
+2025-12-15 11:52:25 [32minfo[39m: [32mSocket connected: 1tFr6xcxmFJ68gwqAAAJ[39m
+2025-12-15 11:52:27 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 12:25:22 [32minfo[39m: [32mSocket disconnected: 1tFr6xcxmFJ68gwqAAAJ[39m

@@ -27,6 +27,15 @@ router.post(
   PaymentController.verifyPayment
 );
 
-router.get('/history', authenticate, PaymentController.getTransactionHistory);
+router.post(
+  '/verify-upi',
+  authenticate,
+  authorize(USER_ROLES.MEN),
+  PaymentController.verifyUPIPayment
+);
+
+router.get('/status/:orderId', authenticate, PaymentController.checkPaymentStatus);
+
+router.get('/transactions', authenticate, PaymentController.getTransactionHistory);
 
 export default router;

@@ -11,13 +11,10 @@ export class AuthController {
   // Firebase Phone Auth - Verify Token and Login/Register
   static async verifyFirebaseToken(req, res, next) {
     try {
-      const { idToken, role } = req.body;
+      const { idToken, role, name } = req.body;
 
-      if (!idToken || !role) {
-        throw new ApiError(
-          HTTP_STATUS.BAD_REQUEST,
-          'Firebase ID token and role are required'
-        );
+      if (!idToken) {
+        throw new ApiError(HTTP_STATUS.BAD_REQUEST, 'Firebase ID token is required');
       }
 
       // Verify Firebase token
@@ -25,10 +22,7 @@ export class AuthController {
       const phoneNumber = decodedToken.phone_number;
 
       if (!phoneNumber) {
-        throw new ApiError(
-          HTTP_STATUS.BAD_REQUEST,
-          'Phone number not found in token'
-        );
+        throw new ApiError(HTTP_STATUS.BAD_REQUEST, 'Phone number not found in token');
       }
 
       // Normalize phone number (remove +91 or +)
@@ -37,48 +31,29 @@ export class AuthController {
       // Check if user exists
       let user = await User.findOne({ phone: normalizedPhone });
 
-      if (!user) {
-        // Create new user
-        user = await User.create({
-          phone: normalizedPhone,
-          authType: 'phone',
-          role,
-          name: `User${Date.now()}`, // Temporary name
-          firebaseUid: decodedToken.uid,
-          isVerified: true,
-        });
+      // If user exists - just log them in (ignore role/name sent)
+      if (user) {
+        if (user.isBanned) {
+          throw new ApiError(HTTP_STATUS.FORBIDDEN, 'Account has been banned');
+        }
 
-        logger.info(`New user registered: ${user._id}`);
-      } else {
         // Update Firebase UID if needed
         if (!user.firebaseUid) {
           user.firebaseUid = decodedToken.uid;
-          await user.save();
         }
-
-        // Update last login
         user.lastLogin = new Date();
         await user.save();
-      }
 
-      // Check if banned
-      if (user.isBanned) {
-        throw new ApiError(HTTP_STATUS.FORBIDDEN, 'Account has been banned');
-      }
+        const token = jwt.sign(
+          { userId: user._id, role: user.role },
+          config.jwt.secret,
+          { expiresIn: config.jwt.expiresIn }
+        );
 
-      // Generate JWT token for app
-      const token = jwt.sign(
-        { userId: user._id, role: user.role },
-        config.jwt.secret,
-        { expiresIn: config.jwt.expiresIn }
-      );
+        logger.info(`Existing user ${user._id} logged in`);
 
-      logger.info(`User ${user._id} authenticated via Firebase`);
-
-      res.status(HTTP_STATUS.OK).json(
-        new ApiResponse(
-          HTTP_STATUS.OK,
-          {
+        return res.status(HTTP_STATUS.OK).json(
+          new ApiResponse(HTTP_STATUS.OK, {
             token,
             user: {
               id: user._id,
@@ -87,36 +62,68 @@ export class AuthController {
               name: user.name,
               profileImage: user.profileImage,
               coins: user.coins,
-              isNewUser: !user.name || user.name.startsWith('User'),
+              isOnline: user.isOnline,
+              isAvailable: user.isAvailable,
+              isNewUser: false,
             },
+          }, 'Login successful')
+        );
+      }
+
+      // User doesn't exist - check if we have registration data
+      if (!role || !['men', 'women'].includes(role)) {
+        throw new ApiError(HTTP_STATUS.NOT_FOUND, 'NEW_USER_REQUIRED');
+      }
+
+      // Create new user
+      const userName = name && name.trim() ? name.trim() : `User${Date.now()}`;
+      
+      user = await User.create({
+        phone: normalizedPhone,
+        authType: 'phone',
+        role,
+        name: userName,
+        firebaseUid: decodedToken.uid,
+        isVerified: true,
+        coins: role === 'men' ? 50 : 0, // 50 free coins for new men
+      });
+
+      logger.info(`New user registered: ${user._id} as ${role}`);
+
+      const token = jwt.sign(
+        { userId: user._id, role: user.role },
+        config.jwt.secret,
+        { expiresIn: config.jwt.expiresIn }
+      );
+
+      res.status(HTTP_STATUS.CREATED).json(
+        new ApiResponse(HTTP_STATUS.CREATED, {
+          token,
+          user: {
+            id: user._id,
+            phone: user.phone,
+            role: user.role,
+            name: user.name,
+            profileImage: user.profileImage,
+            coins: user.coins,
+            isNewUser: true,
           },
-          'Authentication successful'
-        )
+        }, 'Registration successful')
       );
     } catch (error) {
       logger.error('Firebase verification error:', error);
-      next(
-        new ApiError(
-          HTTP_STATUS.UNAUTHORIZED,
-          error.message || 'Invalid or expired token'
-        )
-      );
+      if (error instanceof ApiError) return next(error);
+      next(new ApiError(HTTP_STATUS.UNAUTHORIZED, error.message || 'Invalid token'));
     }
   }
 
-  // Refresh Token
   static async refreshToken(req, res, next) {
     try {
       const { userId } = req.user;
       const user = await User.findById(userId);
 
-      if (!user) {
-        throw new ApiError(HTTP_STATUS.NOT_FOUND, 'User not found');
-      }
-
-      if (user.isBanned) {
-        throw new ApiError(HTTP_STATUS.FORBIDDEN, 'Account has been banned');
-      }
+      if (!user) throw new ApiError(HTTP_STATUS.NOT_FOUND, 'User not found');
+      if (user.isBanned) throw new ApiError(HTTP_STATUS.FORBIDDEN, 'Account banned');
 
       const token = jwt.sign(
         { userId: user._id, role: user.role },
@@ -124,23 +131,29 @@ export class AuthController {
         { expiresIn: config.jwt.expiresIn }
       );
 
-      res.json(
-        new ApiResponse(
-          HTTP_STATUS.OK,
-          {
-            token,
-            user: {
-              id: user._id,
-              phone: user.phone,
-              role: user.role,
-              name: user.name,
-              profileImage: user.profileImage,
-              coins: user.coins,
-            },
-          },
-          'Token refreshed'
-        )
-      );
+      res.json(new ApiResponse(HTTP_STATUS.OK, {
+        token,
+        user: {
+          id: user._id,
+          phone: user.phone,
+          role: user.role,
+          name: user.name,
+          profileImage: user.profileImage,
+          coins: user.coins,
+        },
+      }, 'Token refreshed'));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getCurrentUser(req, res, next) {
+    try {
+      const user = await User.findById(req.userId).select('-socketId -firebaseUid');
+      if (!user) throw new ApiError(HTTP_STATUS.NOT_FOUND, 'User not found');
+      if (user.isBanned) throw new ApiError(HTTP_STATUS.FORBIDDEN, 'Account banned');
+
+      res.json(new ApiResponse(HTTP_STATUS.OK, { user }, 'User retrieved'));
     } catch (error) {
       next(error);
     }

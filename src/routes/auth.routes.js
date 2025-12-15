@@ -18,4 +18,7 @@ router.post(
 // Refresh JWT token
 router.post('/refresh-token', authenticate, AuthController.refreshToken);
 
+// Get current user
+router.get('/me', authenticate, AuthController.getCurrentUser);
+
 export default router;

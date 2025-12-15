@@ -1,2 +1,39 @@
 2025-12-01 13:05:04 [31merror[39m: [31m404 - Route / not found[39m
 2025-12-01 13:05:05 [31merror[39m: [31m404 - Route /favicon.ico not found[39m
+2025-12-14 23:23:26 [31merror[39m: [31m404 - Route /api/api/auth/firebase-verify not found[39m
+2025-12-14 23:24:04 [31merror[39m: [31m404 - Route /api/api/auth/firebase-verify not found[39m
+2025-12-14 23:24:22 [31merror[39m: [31m404 - Route /api/api/auth/firebase-verify not found[39m
+2025-12-14 23:32:05 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-14 23:32:29 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-14 23:32:39 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-14 23:33:23 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-14 23:33:26 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-14 23:33:29 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-14 23:34:05 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-14 23:36:05 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-14 23:46:44 [31merror[39m: [31m404 - Route /auth/firebase-verify not found[39m
+2025-12-15 00:07:51 [31merror[39m: [31m404 - Route /auth/firebase-verify not found[39m
+2025-12-15 10:11:53 [31merror[39m: [31m404 - Route /auth/firebase-verify not found[39m
+2025-12-15 10:27:23 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 10:27:29 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 10:27:49 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 10:32:46 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 10:33:00 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 11:06:45 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 11:07:53 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 11:27:02 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 11:27:04 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 11:30:13 [31merror[39m: [31m401 - Authentication required[39m
+2025-12-15 11:30:57 [31merror[39m: [31mFirebase verification error: NEW_USER_REQUIRED[39m
+2025-12-15 11:30:57 [31merror[39m: [31m404 - NEW_USER_REQUIRED[39m
+2025-12-15 11:46:13 [31merror[39m: [31mFirebase verification error: NEW_USER_REQUIRED[39m
+2025-12-15 11:46:13 [31merror[39m: [31m404 - NEW_USER_REQUIRED[39m
+2025-12-15 11:46:28 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 11:46:31 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 11:46:53 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 11:46:55 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 11:49:14 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 11:49:18 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 11:49:45 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 11:51:51 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 11:52:27 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m

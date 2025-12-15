@@ -248,3 +248,42 @@
 2025-12-15 11:52:25 [32minfo[39m: [32mSocket connected: 1tFr6xcxmFJ68gwqAAAJ[39m
 2025-12-15 11:52:27 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
 2025-12-15 12:25:22 [32minfo[39m: [32mSocket disconnected: 1tFr6xcxmFJ68gwqAAAJ[39m
+2025-12-15 14:36:54 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-15 14:36:54 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-15 14:36:54 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-15 14:36:54 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-15 14:36:54 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-15 14:36:55 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-15 14:43:02 [32minfo[39m: [32mSocket connected: eMtkHyT1CHlArHCVAAAB[39m
+2025-12-15 14:43:14 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 14:43:19 [32minfo[39m: [32mSocket disconnected: eMtkHyT1CHlArHCVAAAB[39m
+2025-12-15 14:43:35 [32minfo[39m: [32mExisting user 693fa43081d2ba546f134a17 logged in[39m
+2025-12-15 14:43:36 [32minfo[39m: [32mSocket connected: Mqxmw2Gs-bnzLv01AAAD[39m
+2025-12-15 14:43:50 [32minfo[39m: [32mOrder created: order_RrpkwLVKLci1tX[39m
+2025-12-15 14:43:50 [32minfo[39m: [32mOrder created: order_RrpkwLVKLci1tX for user 693fa43081d2ba546f134a17[39m
+2025-12-15 14:44:50 [32minfo[39m: [32mSocket disconnected: Mqxmw2Gs-bnzLv01AAAD[39m
+2025-12-15 14:45:03 [32minfo[39m: [32mExisting user 693fa7b72fbe80b8197a81ba logged in[39m
+2025-12-15 14:45:03 [32minfo[39m: [32mSocket connected: f8e01w6SpTpmbhrqAAAF[39m
+2025-12-15 14:45:05 [31merror[39m: [31m404 - Route /api/users/toggle-availability not found[39m
+2025-12-15 15:23:03 [32minfo[39m: [32mSocket disconnected: f8e01w6SpTpmbhrqAAAF[39m
+2025-12-15 15:53:49 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-15 17:56:15 [32minfo[39m: [32mSocket connected: OlHtUldiPJ0T5Ys-AAAI[39m
+2025-12-15 17:56:45 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-15 17:56:45 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-15 17:56:45 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-15 17:56:45 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-15 17:56:45 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-15 17:56:46 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-15 17:56:48 [32minfo[39m: [32mSocket connected: VQFfvA_QwUTZrqihAAAB[39m
+2025-12-15 17:56:54 [32minfo[39m: [32mSocket disconnected: VQFfvA_QwUTZrqihAAAB[39m
+2025-12-15 17:56:57 [32minfo[39m: [32mSocket connected: rVzToVswtXWzbcawAAAD[39m
+2025-12-15 17:57:00 [32minfo[39m: [32mSocket disconnected: rVzToVswtXWzbcawAAAD[39m
+2025-12-15 17:57:02 [32minfo[39m: [32mSocket connected: Fz2zW_Sm5TpB5nswAAAF[39m
+2025-12-15 17:57:04 [32minfo[39m: [32mUser 693fa7b72fbe80b8197a81ba availability: true[39m
+2025-12-15 17:57:18 [32minfo[39m: [32mSocket disconnected: Fz2zW_Sm5TpB5nswAAAF[39m
+2025-12-15 17:57:51 [32minfo[39m: [32mExisting user 693fa43081d2ba546f134a17 logged in[39m
+2025-12-15 17:57:52 [32minfo[39m: [32mSocket connected: 9Lq6V6oTN7KYJsNbAAAH[39m
+2025-12-15 17:58:56 [32minfo[39m: [32mOrder created: order_Rrt51haEiOIeUd[39m
+2025-12-15 17:58:56 [32minfo[39m: [32mOrder created: order_Rrt51haEiOIeUd for user 693fa43081d2ba546f134a17[39m
+2025-12-15 18:03:58 [32minfo[39m: [32mOrder created: order_RrtAKe69zeo72f[39m
+2025-12-15 18:03:58 [32minfo[39m: [32mOrder created: order_RrtAKe69zeo72f for user 693fa43081d2ba546f134a17[39m

@@ -57,7 +57,30 @@ router.get(
   UserController.getAvailableWomen
 );
 
+// Support BOTH PUT and POST for toggle-availability
 router.put(
+  '/toggle-availability',
+  authenticate,
+  authorize(USER_ROLES.WOMEN),
+  UserController.toggleAvailability
+);
+
+router.post(
+  '/toggle-availability',
+  authenticate,
+  authorize(USER_ROLES.WOMEN),
+  UserController.toggleAvailability
+);
+
+// Also support /availability route
+router.put(
+  '/availability',
+  authenticate,
+  authorize(USER_ROLES.WOMEN),
+  UserController.toggleAvailability
+);
+
+router.post(
   '/availability',
   authenticate,
   authorize(USER_ROLES.WOMEN),

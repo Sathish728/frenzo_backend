@@ -356,3 +356,16 @@
 2025-12-16 02:00:00 [32minfo[39m: [32m🧹 Running daily cleanup...[39m
 2025-12-16 02:00:00 [32minfo[39m: [32m✅ Daily cleanup completed[39m
 2025-12-16 02:01:54 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-16 10:57:06 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-16 10:57:07 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-16 10:57:07 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-16 10:57:07 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-16 10:57:07 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-16 10:57:08 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-16 11:05:54 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-16 11:54:17 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-16 17:11:29 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-16 17:20:27 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-16 17:52:28 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-16 21:35:03 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-16 22:01:11 [33mwarn[39m: [33mMongoDB disconnected[39m

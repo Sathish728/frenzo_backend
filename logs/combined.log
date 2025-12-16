@@ -287,3 +287,72 @@
 2025-12-15 17:58:56 [32minfo[39m: [32mOrder created: order_Rrt51haEiOIeUd for user 693fa43081d2ba546f134a17[39m
 2025-12-15 18:03:58 [32minfo[39m: [32mOrder created: order_RrtAKe69zeo72f[39m
 2025-12-15 18:03:58 [32minfo[39m: [32mOrder created: order_RrtAKe69zeo72f for user 693fa43081d2ba546f134a17[39m
+2025-12-15 18:08:47 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-15 18:08:47 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-15 18:08:47 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-15 18:08:47 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-15 18:08:47 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-15 18:08:48 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-15 18:08:52 [32minfo[39m: [32mSocket connected: 5ZgsUqZtvfiDhdTvAAAB[39m
+2025-12-15 18:47:39 [32minfo[39m: [32mSocket disconnected: 5ZgsUqZtvfiDhdTvAAAB[39m
+2025-12-15 18:59:10 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-15 18:59:10 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-15 18:59:10 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-15 18:59:10 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-15 18:59:10 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-15 18:59:11 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-15 19:00:21 [32minfo[39m: [32mSocket connected: aOrViizev0BsX6NCAAAB[39m
+2025-12-15 19:00:26 [32minfo[39m: [32mSocket disconnected: aOrViizev0BsX6NCAAAB[39m
+2025-12-15 19:04:43 [32minfo[39m: [32mSocket connected: iLYTruIApb9Tv2-FAAAD[39m
+2025-12-15 19:04:57 [32minfo[39m: [32mSocket disconnected: iLYTruIApb9Tv2-FAAAD[39m
+2025-12-15 19:05:16 [32minfo[39m: [32mExisting user 693fa7b72fbe80b8197a81ba logged in[39m
+2025-12-15 19:05:17 [32minfo[39m: [32mSocket connected: MaP_HkfDJYbHkzl5AAAF[39m
+2025-12-15 19:05:25 [32minfo[39m: [32mUser 693fa7b72fbe80b8197a81ba availability: true[39m
+2025-12-15 19:05:50 [32minfo[39m: [32mSocket disconnected: MaP_HkfDJYbHkzl5AAAF[39m
+2025-12-15 19:06:03 [32minfo[39m: [32mExisting user 693fa43081d2ba546f134a17 logged in[39m
+2025-12-15 19:06:03 [32minfo[39m: [32mSocket connected: zCc_Ken4HWZvZY91AAAH[39m
+2025-12-15 19:06:21 [32minfo[39m: [32mSocket disconnected: zCc_Ken4HWZvZY91AAAH[39m
+2025-12-15 19:06:34 [32minfo[39m: [32mExisting user 693fa7b72fbe80b8197a81ba logged in[39m
+2025-12-15 19:06:35 [32minfo[39m: [32mSocket connected: oOe7AM7oM5QawUUWAAAJ[39m
+2025-12-15 19:06:53 [32minfo[39m: [32mUser 693fa7b72fbe80b8197a81ba availability: false[39m
+2025-12-15 19:07:00 [32minfo[39m: [32mUser 693fa7b72fbe80b8197a81ba availability: true[39m
+2025-12-15 19:07:52 [32minfo[39m: [32mSocket disconnected: oOe7AM7oM5QawUUWAAAJ[39m
+2025-12-15 19:08:43 [32minfo[39m: [32mExisting user 693fa43081d2ba546f134a17 logged in[39m
+2025-12-15 19:08:43 [32minfo[39m: [32mSocket connected: 1O8L8Lg5z47s0Y8mAAAL[39m
+2025-12-15 19:41:15 [32minfo[39m: [32mSocket disconnected: 1O8L8Lg5z47s0Y8mAAAL[39m
+2025-12-15 20:49:34 [32minfo[39m: [32m✅ Schedulers initialized[39m
+2025-12-15 20:49:34 [32minfo[39m: [32m✅ Firebase Admin SDK initialized[39m
+2025-12-15 20:49:35 [32minfo[39m: [32m🚀 Server running on port 5000[39m
+2025-12-15 20:49:35 [32minfo[39m: [32m📝 Environment: development[39m
+2025-12-15 20:49:35 [32minfo[39m: [32m🔗 API: http://localhost:5000/api[39m
+2025-12-15 20:49:37 [32minfo[39m: [32m✅ MongoDB connected successfully[39m
+2025-12-15 20:49:44 [32minfo[39m: [32mSocket connected: TY4DAf_eClKStthpAAAC[39m
+2025-12-15 20:50:13 [32minfo[39m: [32mSocket disconnected: TY4DAf_eClKStthpAAAC[39m
+2025-12-15 20:50:29 [32minfo[39m: [32mExisting user 693fa7b72fbe80b8197a81ba logged in[39m
+2025-12-15 20:50:30 [32minfo[39m: [32mSocket connected: _N0qSFYyyQiRhZD8AAAE[39m
+2025-12-15 20:50:32 [32minfo[39m: [32mUser 693fa7b72fbe80b8197a81ba availability: true[39m
+2025-12-15 20:50:52 [32minfo[39m: [32mUser 693fa7b72fbe80b8197a81ba availability: false[39m
+2025-12-15 20:51:01 [32minfo[39m: [32mUser 693fa7b72fbe80b8197a81ba availability: true[39m
+2025-12-15 20:51:09 [32minfo[39m: [32mSocket disconnected: _N0qSFYyyQiRhZD8AAAE[39m
+2025-12-15 20:51:37 [32minfo[39m: [32mExisting user 693fa43081d2ba546f134a17 logged in[39m
+2025-12-15 20:51:38 [32minfo[39m: [32mSocket connected: a0pMVll5SxyCHJOoAAAG[39m
+2025-12-15 20:53:16 [32minfo[39m: [32mOrder created: order_Rrw3AhwMFiQ9Vr[39m
+2025-12-15 20:53:16 [32minfo[39m: [32mOrder created: order_Rrw3AhwMFiQ9Vr for user 693fa43081d2ba546f134a17[39m
+2025-12-15 20:55:18 [32minfo[39m: [32mSocket disconnected: a0pMVll5SxyCHJOoAAAG[39m
+2025-12-15 20:55:46 [32minfo[39m: [32mSocket connected: 40xxdyLW-NQl6xdKAAAI[39m
+2025-12-15 20:55:49 [32minfo[39m: [32mSocket disconnected: 40xxdyLW-NQl6xdKAAAI[39m
+2025-12-15 20:55:51 [32minfo[39m: [32mSocket connected: 2G4dDTt6D9xbYK4zAAAK[39m
+2025-12-15 21:06:24 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-15 21:11:14 [32minfo[39m: [32mSocket disconnected: 2G4dDTt6D9xbYK4zAAAK[39m
+2025-12-16 00:08:54 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-16 00:15:59 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-16 00:20:41 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-16 00:46:34 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-16 01:13:33 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-16 01:24:20 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-16 01:34:47 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-16 01:53:45 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-16 01:58:32 [33mwarn[39m: [33mMongoDB disconnected[39m
+2025-12-16 02:00:00 [32minfo[39m: [32m🧹 Running daily cleanup...[39m
+2025-12-16 02:00:00 [32minfo[39m: [32m✅ Daily cleanup completed[39m
+2025-12-16 02:01:54 [33mwarn[39m: [33mMongoDB disconnected[39m

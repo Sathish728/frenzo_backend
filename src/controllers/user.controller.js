@@ -47,19 +47,21 @@ export class UserController {
     }
   }
 
+  // FIXED: Show women who have isAvailable=true
+  // isOnline shows their real-time status (can call only if online)
   static async getAvailableWomen(req, res, next) {
     try {
       const women = await User.find({
         role: 'women',
-        isOnline: true,
-        isAvailable: true,
+        isAvailable: true,  // Removed isOnline requirement - show all available
         isBanned: false,
       }).select('name profileImage isOnline isAvailable');
 
+      // Return as 'data' array for frontend compatibility
       res
         .status(HTTP_STATUS.OK)
         .json(
-          new ApiResponse(HTTP_STATUS.OK, women, 'Available women retrieved')
+          new ApiResponse(HTTP_STATUS.OK, { women }, 'Available women retrieved')
         );
     } catch (error) {
       next(error);
@@ -80,6 +82,8 @@ export class UserController {
       }
 
       user.isAvailable = isAvailable;
+      // Also set isOnline when toggling availability
+      user.isOnline = isAvailable;
       await user.save();
 
       logger.info(`User ${req.userId} availability: ${isAvailable}`);
@@ -89,7 +93,7 @@ export class UserController {
         .json(
           new ApiResponse(
             HTTP_STATUS.OK,
-            { isAvailable },
+            { isAvailable, isOnline: user.isOnline },
             'Availability updated'
           )
         );

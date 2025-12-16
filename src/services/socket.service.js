@@ -19,7 +19,11 @@ export class SocketService {
     try {
       const user = await User.findOneAndUpdate(
         { socketId },
-        { isOnline: false, socketId: null }
+        { 
+          isOnline: false, 
+          socketId: null,
+          // Note: We don't change isAvailable here - let user control it
+        }
       );
 
       if (user) {
@@ -31,11 +35,11 @@ export class SocketService {
   }
 
   static async getAvailableWomen() {
+    // Return women who are available (show online status for real-time info)
     return User.find({
       role: 'women',
-      isOnline: true,
       isAvailable: true,
       isBanned: false,
-    }).select('name profileImage isOnline');
+    }).select('name profileImage isOnline isAvailable');
   }
 }

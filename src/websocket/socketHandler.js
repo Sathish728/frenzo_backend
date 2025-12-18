@@ -4,28 +4,79 @@ import { CallService } from '../services/call.service.js';
 import { SocketService } from '../services/socket.service.js';
 import { logger } from '../config/logger.js';
 import { CALL_STATUS } from '../config/constants.js';
+import { config } from '../config/env.js';
 
 const callService = new CallService();
 
-// Track active calls in memory for quick lookup
-const activeCallsMap = new Map(); // visitorId -> { callId, visitorId, startTime }
+// Track active calls
+const activeCallsMap = new Map(); // visitorId -> { callId, menUserId, startTime, intervalId }
 
-// Track pending calls (ringing but not yet answered)
+// Track pending calls (ringing)
 const pendingCallsMap = new Map(); // tempCallId -> { menSocketId, womanId, timeout }
+
+// Helper function to end call and notify both parties
+const endCallAndNotify = async (io, callId, menSocket, womanSocket, reason = 'ended') => {
+  try {
+    // Update call record
+    const call = await Call.findById(callId);
+    if (call && call.status !== CALL_STATUS.ENDED) {
+      const duration = Math.floor((Date.now() - call.startTime) / 1000);
+      const minutesUsed = Math.ceil(duration / 60);
+      const coinsUsed = minutesUsed * config.app.coinsPerMinute;
+
+      await Call.findByIdAndUpdate(callId, {
+        status: CALL_STATUS.ENDED,
+        endTime: new Date(),
+        duration: duration,
+        coinsUsed: coinsUsed,
+        coinsEarned: coinsUsed,
+        endReason: reason
+      });
+
+      logger.info(`📞 Call ${callId} ended. Duration: ${duration}s, Coins: ${coinsUsed}`);
+    }
+
+    // Clear active call tracking
+    if (womanSocket?.userId) {
+      const activeCall = activeCallsMap.get(womanSocket.userId.toString());
+      if (activeCall?.intervalId) {
+        clearInterval(activeCall.intervalId);
+      }
+      activeCallsMap.delete(womanSocket.userId.toString());
+    }
+
+    // Notify both parties
+    const endPayload = { callId, reason, duration: call?.duration || 0 };
+    
+    if (menSocket) {
+      menSocket.emit('call_ended', endPayload);
+      delete menSocket.activeCall;
+    }
+    
+    if (womanSocket) {
+      womanSocket.emit('call_ended', endPayload);
+      delete womanSocket.activeCall;
+    }
+
+    // Update women availability
+    const availableWomen = await SocketService.getAvailableWomen();
+    io.emit('women_list_updated', { women: availableWomen });
+
+  } catch (error) {
+    logger.error('endCallAndNotify error:', error);
+  }
+};
 
 export const setupSocketHandlers = (io) => {
   io.on('connection', (socket) => {
     logger.info(`Socket connected: ${socket.id}`);
 
-    // User goes online
+    // ========== USER ONLINE ==========
     socket.on('user_online', async (userId) => {
       try {
         await SocketService.handleUserOnline(userId, socket.id);
-        
-        // Store userId on socket for later use
         socket.userId = userId;
 
-        // Broadcast updated women list to all clients
         const availableWomen = await SocketService.getAvailableWomen();
         io.emit('women_list_updated', { women: availableWomen });
         
@@ -35,7 +86,7 @@ export const setupSocketHandlers = (io) => {
       }
     });
 
-    // Toggle availability (for women)
+    // ========== AVAILABILITY ==========
     socket.on('toggle_availability', async ({ userId, isAvailable }) => {
       try {
         const user = await User.findByIdAndUpdate(
@@ -48,7 +99,6 @@ export const setupSocketHandlers = (io) => {
           logger.info(`User ${userId} availability: ${isAvailable}`);
         }
 
-        // Broadcast updated women list
         const availableWomen = await SocketService.getAvailableWomen();
         io.emit('women_list_updated', { women: availableWomen });
       } catch (error) {
@@ -56,7 +106,6 @@ export const setupSocketHandlers = (io) => {
       }
     });
 
-    // Set availability via socket
     socket.on('set_availability', async ({ isAvailable }) => {
       try {
         if (socket.userId) {
@@ -70,7 +119,6 @@ export const setupSocketHandlers = (io) => {
             logger.info(`User ${socket.userId} set availability: ${isAvailable}`);
           }
 
-          // Broadcast updated women list
           const availableWomen = await SocketService.getAvailableWomen();
           io.emit('women_list_updated', { women: availableWomen });
         }
@@ -79,15 +127,13 @@ export const setupSocketHandlers = (io) => {
       }
     });
 
-    // ========== CALL FLOW ==========
-
-    // Men initiates call to woman
+    // ========== INITIATE CALL ==========
     socket.on('initiate_call', async (data) => {
       try {
         const { womanId } = data;
         const menUserId = socket.userId;
 
-        logger.info(`Call initiation request: ${menUserId} -> ${womanId}`);
+        logger.info(`📞 Call initiation: ${menUserId} -> ${womanId}`);
 
         if (!menUserId) {
           socket.emit('call_failed', { message: 'Not authenticated' });
@@ -97,47 +143,39 @@ export const setupSocketHandlers = (io) => {
         const menUser = await User.findById(menUserId);
         const womanUser = await User.findById(womanId);
 
-        // Validate men user
         if (!menUser) {
           socket.emit('call_failed', { message: 'User not found' });
           return;
         }
 
-        // Check coins (minimum for 1 minute)
-        if (menUser.coins < 40) {
-          socket.emit('insufficient_coins', { message: 'Need at least 40 coins to call' });
+        // Check coins
+        if (menUser.coins < config.app.coinsPerMinute) {
+          socket.emit('insufficient_coins', { message: `Need at least ${config.app.coinsPerMinute} coins to call` });
           return;
         }
 
-        // Validate woman user
         if (!womanUser) {
           socket.emit('call_failed', { message: 'User not available' });
           return;
         }
 
-        // Check if woman is online and available
         if (!womanUser.isOnline || !womanUser.isAvailable) {
           socket.emit('call_failed', { message: 'User is offline or unavailable' });
           return;
         }
 
-        // Check if woman has a socket connection
         if (!womanUser.socketId) {
           socket.emit('call_failed', { message: 'User is not connected' });
           return;
         }
 
-        // *** CHECK IF WOMAN IS BUSY ON ANOTHER CALL ***
+        // Check if busy
         const existingCall = activeCallsMap.get(womanId.toString());
         if (existingCall) {
-          socket.emit('user_busy', { 
-            message: 'User is busy on another call'
-          });
-          logger.info(`Woman ${womanId} is busy, rejecting call from ${menUserId}`);
+          socket.emit('user_busy', { message: 'User is busy on another call' });
           return;
         }
 
-        // Also check database for ongoing calls
         const ongoingCall = await Call.findOne({
           womenUserId: womanId,
           status: CALL_STATUS.ONGOING
@@ -145,14 +183,12 @@ export const setupSocketHandlers = (io) => {
 
         if (ongoingCall) {
           socket.emit('user_busy', { message: 'User is busy on another call' });
-          logger.info(`Woman ${womanId} has ongoing call in DB`);
           return;
         }
 
-        // Generate a temporary call ID for tracking
         const tempCallId = `call_${Date.now()}_${menUserId}_${womanId}`;
 
-        // Send incoming call to woman with CORRECT structure
+        // Send incoming call notification to woman
         io.to(womanUser.socketId).emit('incoming_call', {
           callId: tempCallId,
           caller: {
@@ -164,24 +200,22 @@ export const setupSocketHandlers = (io) => {
           menName: menUser.name,
         });
 
-        logger.info(`Incoming call sent to woman ${womanId}, tempCallId: ${tempCallId}`);
+        logger.info(`📞 Incoming call sent to woman ${womanId}, tempCallId: ${tempCallId}`);
 
-        // Store pending call with 30-second timeout
+        // Set timeout (30 seconds)
         const callTimeout = setTimeout(() => {
           const pending = pendingCallsMap.get(tempCallId);
           if (pending) {
-            // Call wasn't answered in time
-            logger.info(`Call timeout: ${tempCallId}`);
-            socket.emit('call_failed', { message: 'No answer', reason: 'no_answer' });
+            logger.info(`📞 Call timeout: ${tempCallId}`);
+            socket.emit('no_answer', { message: 'No answer' });
             
-            // Notify woman that call was missed
             if (womanUser.socketId) {
               io.to(womanUser.socketId).emit('call_missed', { callId: tempCallId });
             }
             
             pendingCallsMap.delete(tempCallId);
           }
-        }, 30000); // 30 seconds timeout
+        }, 30000);
 
         pendingCallsMap.set(tempCallId, {
           menSocketId: socket.id,
@@ -191,10 +225,7 @@ export const setupSocketHandlers = (io) => {
           timeout: callTimeout,
         });
 
-        // Store on socket for reference
         socket.pendingCallId = tempCallId;
-
-        logger.info(`Call initiated: ${menUserId} -> ${womanId}, tempCallId: ${tempCallId}`);
 
       } catch (error) {
         logger.error('initiate_call error:', error);
@@ -202,34 +233,30 @@ export const setupSocketHandlers = (io) => {
       }
     });
 
-    // Woman answers call
+    // ========== ANSWER CALL ==========
     socket.on('answer_call', async (data) => {
       try {
         const { callId } = data;
         const womanUserId = socket.userId;
 
-        logger.info(`Answer call request: ${callId} by ${womanUserId}`);
+        logger.info(`📞 Answer call: ${callId} by ${womanUserId}`);
 
         if (!womanUserId) {
           socket.emit('call_failed', { message: 'Not authenticated' });
           return;
         }
 
-        // Find the pending call
         const pendingCall = pendingCallsMap.get(callId);
         
         if (!pendingCall) {
-          socket.emit('call_failed', { message: 'Call no longer available or already expired' });
-          logger.warn(`Pending call not found: ${callId}`);
+          socket.emit('call_failed', { message: 'Call no longer available' });
           return;
         }
 
-        // Clear the timeout
+        // Clear timeout
         if (pendingCall.timeout) {
           clearTimeout(pendingCall.timeout);
         }
-
-        // Remove from pending
         pendingCallsMap.delete(callId);
 
         const menUserId = pendingCall.menUserId;
@@ -243,31 +270,31 @@ export const setupSocketHandlers = (io) => {
           return;
         }
 
-        // Check if men's socket is still connected
         const menSocket = io.sockets.sockets.get(menSocketId);
         if (!menSocket) {
           socket.emit('call_failed', { message: 'Caller disconnected' });
           return;
         }
 
-        // Create call record in database
+        // Create call record
         const call = await callService.createCall(menUserId, womanUserId);
+        const callIdStr = call._id.toString();
 
         // Mark woman as busy
         activeCallsMap.set(womanUserId.toString(), {
-          callId: call._id.toString(),
+          callId: callIdStr,
           menUserId: menUserId.toString(),
-          startTime: new Date()
+          startTime: new Date(),
+          intervalId: null,
         });
 
-        // Store call info on both sockets
-        socket.activeCall = { callId: call._id, remoteSocketId: menSocketId };
-        menSocket.activeCall = { callId: call._id, remoteSocketId: socket.id };
+        // Store call info
+        socket.activeCall = { callId: call._id, remoteSocketId: menSocketId, remoteUserId: menUserId };
+        menSocket.activeCall = { callId: call._id, remoteSocketId: socket.id, remoteUserId: womanUserId };
 
-        // Clear pending call from men's socket
         delete menSocket.pendingCallId;
 
-        // Notify BOTH parties that call is connected
+        // Notify both parties
         menSocket.emit('call_answered', { 
           callId: call._id,
           woman: {
@@ -277,11 +304,7 @@ export const setupSocketHandlers = (io) => {
           }
         });
 
-        // Also tell man that call is now connected
-        menSocket.emit('call_connected', {
-          callId: call._id,
-        });
-
+        menSocket.emit('call_connected', { callId: call._id });
         socket.emit('call_connected', {
           callId: call._id,
           caller: {
@@ -291,234 +314,233 @@ export const setupSocketHandlers = (io) => {
           }
         });
 
-        // Start coin deduction timer
-        callService.startCoinDeduction(call._id, menUserId, womanUserId, io);
+        // ========== START COIN DEDUCTION (Every 60 seconds) ==========
+        const coinInterval = setInterval(async () => {
+          try {
+            const currentMenUser = await User.findById(menUserId);
+            const currentWomanUser = await User.findById(womanUserId);
+            
+            if (!currentMenUser || currentMenUser.coins < config.app.coinsPerMinute) {
+              // Insufficient coins - end call
+              logger.info(`💰 Insufficient coins for call ${callIdStr}, ending call`);
+              clearInterval(coinInterval);
+              
+              const activeCall = activeCallsMap.get(womanUserId.toString());
+              if (activeCall) {
+                activeCall.intervalId = null;
+              }
+              
+              // End the call
+              await endCallAndNotify(io, call._id, menSocket, socket, 'insufficient_coins');
+              return;
+            }
 
-        logger.info(`Call answered and connected: ${call._id}, ${menUserId} <-> ${womanUserId}`);
+            // Deduct from men
+            const updatedMen = await User.findByIdAndUpdate(
+              menUserId, 
+              { $inc: { coins: -config.app.coinsPerMinute } },
+              { new: true }
+            );
+
+            // Add to women
+            const updatedWoman = await User.findByIdAndUpdate(
+              womanUserId, 
+              { $inc: { coins: config.app.coinsPerMinute } },
+              { new: true }
+            );
+
+            // Update call record
+            await Call.findByIdAndUpdate(call._id, {
+              $inc: { 
+                duration: 60,
+                coinsUsed: config.app.coinsPerMinute,
+                coinsEarned: config.app.coinsPerMinute
+              }
+            });
+
+            logger.info(`💰 Coin transfer: Men ${menUserId} (-${config.app.coinsPerMinute}) -> Women ${womanUserId} (+${config.app.coinsPerMinute})`);
+
+            // Notify men about coin update
+            menSocket.emit('coins_updated', { 
+              coins: updatedMen.coins,
+              deducted: config.app.coinsPerMinute
+            });
+
+            // Notify women about earnings
+            socket.emit('coins_updated', { 
+              coins: updatedWoman.coins,
+              earned: config.app.coinsPerMinute
+            });
+
+            // Also emit call duration update
+            const currentDuration = Math.floor((Date.now() - activeCallsMap.get(womanUserId.toString())?.startTime) / 1000);
+            menSocket.emit('call_duration_update', { duration: currentDuration });
+            socket.emit('call_duration_update', { duration: currentDuration });
+
+          } catch (error) {
+            logger.error('Coin deduction error:', error);
+          }
+        }, 60000); // Every 60 seconds
+
+        // Store interval ID
+        const activeCall = activeCallsMap.get(womanUserId.toString());
+        if (activeCall) {
+          activeCall.intervalId = coinInterval;
+        }
+
+        logger.info(`📞 Call ${callIdStr} connected between ${menUserId} and ${womanUserId}`);
 
       } catch (error) {
         logger.error('answer_call error:', error);
-        socket.emit('call_failed', { message: error.message || 'Failed to answer call' });
+        socket.emit('call_failed', { message: 'Failed to answer call' });
       }
     });
 
-    // Reject call
+    // ========== REJECT CALL ==========
     socket.on('reject_call', async (data) => {
       try {
         const { callId } = data;
 
-        logger.info(`Reject call: ${callId}`);
+        logger.info(`📞 Reject call: ${callId}`);
 
         const pendingCall = pendingCallsMap.get(callId);
         
         if (pendingCall) {
-          // Clear timeout
           if (pendingCall.timeout) {
             clearTimeout(pendingCall.timeout);
           }
 
-          // Notify the caller
           const menSocket = io.sockets.sockets.get(pendingCall.menSocketId);
           if (menSocket) {
-            menSocket.emit('call_rejected', { message: 'Call was declined' });
+            menSocket.emit('call_rejected', { callId, message: 'Call was rejected' });
             delete menSocket.pendingCallId;
           }
 
           pendingCallsMap.delete(callId);
         }
 
-        logger.info(`Call rejected: ${callId}`);
-
       } catch (error) {
         logger.error('reject_call error:', error);
       }
     });
 
-    // End call
+    // ========== END CALL ==========
     socket.on('end_call', async (data) => {
       try {
-        const { callId } = data;
-        
-        logger.info(`End call request: ${callId}`);
+        const { callId, reason = 'user_ended' } = data;
 
-        // Check if this is a pending call (not yet answered)
-        if (socket.pendingCallId) {
-          const pendingCall = pendingCallsMap.get(socket.pendingCallId);
-          if (pendingCall) {
-            if (pendingCall.timeout) {
-              clearTimeout(pendingCall.timeout);
-            }
-            
-            // Notify woman that call was cancelled
-            io.to(pendingCall.womanSocketId).emit('call_ended', {
-              reason: 'caller_cancelled'
-            });
-            
-            pendingCallsMap.delete(socket.pendingCallId);
-          }
-          delete socket.pendingCallId;
-        }
-        
-        // Handle active call
-        if (callId) {
-          const call = await callService.endCall(callId, io);
-          
-          if (call) {
-            // Remove from active calls map
-            activeCallsMap.delete(call.womenUserId.toString());
-            logger.info(`Active call removed for woman: ${call.womenUserId}`);
-          }
-        }
+        logger.info(`📞 End call request: ${callId}, reason: ${reason}`);
 
-        // Also check socket's active call
         if (socket.activeCall) {
-          const { callId: activeCallId, remoteSocketId } = socket.activeCall;
-          
-          // End the call if not already ended
-          if (activeCallId && activeCallId !== callId) {
-            const call = await callService.endCall(activeCallId, io);
-            if (call) {
-              activeCallsMap.delete(call.womenUserId.toString());
-            }
-          }
-
-          // Notify remote party
-          const remoteSocket = io.sockets.sockets.get(remoteSocketId);
-          if (remoteSocket) {
-            remoteSocket.emit('call_ended', { 
-              reason: 'remote_ended',
-              callId: activeCallId 
-            });
-            delete remoteSocket.activeCall;
-          }
-
-          delete socket.activeCall;
+          const remoteSocket = io.sockets.sockets.get(socket.activeCall.remoteSocketId);
+          await endCallAndNotify(io, socket.activeCall.callId, socket, remoteSocket, reason);
         }
-
-        logger.info(`Call ended: ${callId}`);
 
       } catch (error) {
         logger.error('end_call error:', error);
       }
     });
 
-    // ICE candidate exchange (for WebRTC if implemented)
-    socket.on('ice_candidate', async (data) => {
-      try {
-        const { targetUserId, candidate } = data;
-        const targetUser = await User.findById(targetUserId);
-
-        if (targetUser?.socketId) {
-          io.to(targetUser.socketId).emit('ice_candidate', { 
-            candidate,
-            from: socket.userId 
-          });
-        }
-      } catch (error) {
-        logger.error('ice_candidate error:', error);
-      }
-    });
-
-    // WebRTC offer
+    // ========== WEBRTC SIGNALING ==========
+    
+    // WebRTC Offer (from caller to receiver)
     socket.on('webrtc_offer', async (data) => {
       try {
-        const { targetUserId, offer } = data;
-        const targetUser = await User.findById(targetUserId);
+        const { offer, targetUserId } = data;
+        
+        logger.info(`🎥 WebRTC offer from ${socket.userId} to ${targetUserId}`);
 
+        const targetUser = await User.findById(targetUserId);
         if (targetUser?.socketId) {
-          io.to(targetUser.socketId).emit('webrtc_offer', { 
+          io.to(targetUser.socketId).emit('webrtc_offer', {
             offer,
-            from: socket.userId 
+            fromUserId: socket.userId
           });
         }
+
       } catch (error) {
         logger.error('webrtc_offer error:', error);
       }
     });
 
-    // WebRTC answer
+    // WebRTC Answer (from receiver to caller)
     socket.on('webrtc_answer', async (data) => {
       try {
-        const { targetUserId, answer } = data;
-        const targetUser = await User.findById(targetUserId);
+        const { answer, targetUserId } = data;
+        
+        logger.info(`🎥 WebRTC answer from ${socket.userId} to ${targetUserId}`);
 
+        const targetUser = await User.findById(targetUserId);
         if (targetUser?.socketId) {
-          io.to(targetUser.socketId).emit('webrtc_answer', { 
+          io.to(targetUser.socketId).emit('webrtc_answer', {
             answer,
-            from: socket.userId 
+            fromUserId: socket.userId
           });
         }
+
       } catch (error) {
         logger.error('webrtc_answer error:', error);
       }
     });
 
-    // Heartbeat/ping to keep connection alive (helps with Render free tier)
-    socket.on('ping', () => {
-      socket.emit('pong');
+    // ICE Candidate exchange
+    socket.on('ice_candidate', async (data) => {
+      try {
+        const { candidate, targetUserId } = data;
+        
+        // logger.info(`🧊 ICE candidate from ${socket.userId} to ${targetUserId}`);
+
+        const targetUser = await User.findById(targetUserId);
+        if (targetUser?.socketId) {
+          io.to(targetUser.socketId).emit('ice_candidate', {
+            candidate,
+            fromUserId: socket.userId
+          });
+        }
+
+      } catch (error) {
+        logger.error('ice_candidate error:', error);
+      }
     });
 
-    // User disconnects
+    // ========== DISCONNECT ==========
     socket.on('disconnect', async () => {
       try {
-        logger.info(`Socket disconnecting: ${socket.id}`);
+        logger.info(`Socket disconnected: ${socket.id}`);
 
-        // Handle pending call
+        // Handle active call cleanup
+        if (socket.activeCall) {
+          const remoteSocket = io.sockets.sockets.get(socket.activeCall.remoteSocketId);
+          await endCallAndNotify(io, socket.activeCall.callId, socket, remoteSocket, 'disconnected');
+        }
+
+        // Handle pending call cleanup
         if (socket.pendingCallId) {
           const pendingCall = pendingCallsMap.get(socket.pendingCallId);
-          if (pendingCall) {
-            if (pendingCall.timeout) {
-              clearTimeout(pendingCall.timeout);
-            }
-            
-            // Notify woman that caller disconnected
-            io.to(pendingCall.womanSocketId).emit('call_ended', {
-              reason: 'caller_disconnected'
-            });
-            
-            pendingCallsMap.delete(socket.pendingCallId);
+          if (pendingCall?.timeout) {
+            clearTimeout(pendingCall.timeout);
           }
+          pendingCallsMap.delete(socket.pendingCallId);
         }
 
-        // Handle any active call
-        if (socket.activeCall) {
-          const { callId, remoteSocketId } = socket.activeCall;
-          
-          // End the call
-          if (callId) {
-            const call = await callService.endCall(callId, io);
-            if (call) {
-              activeCallsMap.delete(call.womenUserId.toString());
-            }
-          }
-
-          // Notify remote party
-          const remoteSocket = io.sockets.sockets.get(remoteSocketId);
-          if (remoteSocket) {
-            remoteSocket.emit('call_ended', { 
-              reason: 'disconnected',
-              callId 
-            });
-            delete remoteSocket.activeCall;
-          }
-        }
-
-        // Handle user going offline
-        await SocketService.handleUserOffline(socket.id);
-
-        // If this was a woman, remove from active calls
+        // Update user online status
         if (socket.userId) {
-          activeCallsMap.delete(socket.userId.toString());
+          await User.findByIdAndUpdate(socket.userId, {
+            isOnline: false,
+            isAvailable: false,
+            socketId: null
+          });
+
+          const availableWomen = await SocketService.getAvailableWomen();
+          io.emit('women_list_updated', { women: availableWomen });
         }
 
-        // Broadcast updated women list
-        const availableWomen = await SocketService.getAvailableWomen();
-        io.emit('women_list_updated', { women: availableWomen });
-
-        logger.info(`Socket disconnected: ${socket.id}`);
       } catch (error) {
         logger.error('disconnect error:', error);
       }
     });
+
   });
 };
+
+export default setupSocketHandlers;

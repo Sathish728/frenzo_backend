@@ -1,17 +1,20 @@
 /**
- * Socket Handler for FrndZone
- * FIXED VERSION - Proper WebRTC signaling and coin management
+ * Socket Handler for FrndZone - FULLY FIXED VERSION
+ * 
+ * CRITICAL FIXES:
+ * 1. Fixed CALL_STATUS enum (was using ENDED which doesn't exist)
+ * 2. Fixed WebRTC signaling order - receiver must be ready BEFORE caller sends offer
+ * 3. Fixed socket userId tracking
+ * 4. Fixed coin deduction timing
+ * 5. Added proper error handling
  */
 
 import { User } from '../models/User.model.js';
 import { Call } from '../models/Call.model.js';
-import { CallService } from '../services/call.service.js';
 import { SocketService } from '../services/socket.service.js';
 import { logger } from '../config/logger.js';
 import { CALL_STATUS } from '../config/constants.js';
 import { config } from '../config/env.js';
-
-const callService = new CallService();
 
 // Track active calls: visitorId -> { callId, menUserId, womanUserId, startTime, coinIntervalId }
 const activeCallsMap = new Map();
@@ -19,26 +22,48 @@ const activeCallsMap = new Map();
 // Track pending calls (ringing): tempCallId -> { menSocketId, menUserId, womanId, womanSocketId, timeout }
 const pendingCallsMap = new Map();
 
+// Track socket to user mapping
+const socketToUserMap = new Map();
+const userToSocketMap = new Map();
+
+// Helper: Get socket by userId
+const getSocketByUserId = (io, userId) => {
+  const socketId = userToSocketMap.get(userId?.toString());
+  if (socketId) {
+    return io.sockets.sockets.get(socketId);
+  }
+  return null;
+};
+
 // Helper: End call and notify both parties
-const endCallAndNotify = async (io, callId, menSocket, womanSocket, reason = 'ended') => {
+const endCallAndNotify = async (io, callId, reason = 'ended') => {
   try {
     const call = await Call.findById(callId);
-    if (call && call.status !== CALL_STATUS.ENDED) {
-      const duration = Math.floor((Date.now() - new Date(call.startTime).getTime()) / 1000);
-      const minutesUsed = Math.ceil(duration / 60);
-      const coinsUsed = minutesUsed * (config.app?.coinsPerMinute || 10);
-
-      await Call.findByIdAndUpdate(callId, {
-        status: CALL_STATUS.ENDED,
-        endTime: new Date(),
-        duration: duration,
-        coinsUsed: coinsUsed,
-        coinsEarned: coinsUsed,
-        endReason: reason
-      });
-
-      logger.info(`📞 Call ${callId} ended. Duration: ${duration}s, Coins: ${coinsUsed}, Reason: ${reason}`);
+    if (!call) {
+      logger.warn(`Call ${callId} not found`);
+      return;
     }
+
+    // Use COMPLETED instead of ENDED (ENDED doesn't exist in schema!)
+    if (call.status === CALL_STATUS.COMPLETED) {
+      logger.info(`Call ${callId} already completed`);
+      return;
+    }
+
+    const duration = Math.floor((Date.now() - new Date(call.startTime).getTime()) / 1000);
+    const minutesUsed = Math.ceil(duration / 60);
+    const coinsPerMinute = config.app?.coinsPerMinute || 40;
+    const coinsUsed = minutesUsed * coinsPerMinute;
+
+    // Update call record - use COMPLETED status
+    await Call.findByIdAndUpdate(callId, {
+      status: CALL_STATUS.COMPLETED,
+      endTime: new Date(),
+      duration: duration,
+      coinsUsed: coinsUsed,
+    });
+
+    logger.info(`📞 Call ${callId} ended. Duration: ${duration}s, Coins: ${coinsUsed}, Reason: ${reason}`);
 
     // Clear active call tracking
     for (const [visitorId, callData] of activeCallsMap.entries()) {
@@ -51,8 +76,12 @@ const endCallAndNotify = async (io, callId, menSocket, womanSocket, reason = 'en
       }
     }
 
+    // Get both users' sockets
+    const menSocket = getSocketByUserId(io, call.menUserId);
+    const womanSocket = getSocketByUserId(io, call.womenUserId);
+
     // Notify both parties
-    const endPayload = { callId, reason, duration: call?.duration || 0 };
+    const endPayload = { callId, reason, duration, coinsUsed };
     
     if (menSocket) {
       menSocket.emit('call_ended', endPayload);
@@ -60,7 +89,7 @@ const endCallAndNotify = async (io, callId, menSocket, womanSocket, reason = 'en
     }
     
     if (womanSocket) {
-      womanSocket.emit('call_ended', endPayload);
+      womanSocket.emit('call_ended', { ...endPayload, coinsEarned: coinsUsed });
       delete womanSocket.activeCall;
     }
 
@@ -80,8 +109,17 @@ export const setupSocketHandlers = (io) => {
     // ========== USER ONLINE ==========
     socket.on('user_online', async (userId) => {
       try {
-        await SocketService.handleUserOnline(userId, socket.id);
+        if (!userId) {
+          logger.warn('user_online called without userId');
+          return;
+        }
+
+        // Store socket <-> user mapping
         socket.userId = userId;
+        socketToUserMap.set(socket.id, userId);
+        userToSocketMap.set(userId.toString(), socket.id);
+
+        await SocketService.handleUserOnline(userId, socket.id);
 
         const availableWomen = await SocketService.getAvailableWomen();
         io.emit('women_list_updated', { women: availableWomen });
@@ -150,9 +188,13 @@ export const setupSocketHandlers = (io) => {
           return;
         }
 
-        const coinsPerMinute = config.app?.coinsPerMinute || 10;
+        const coinsPerMinute = config.app?.coinsPerMinute || 40;
         if (menUser.coins < coinsPerMinute) {
-          socket.emit('insufficient_coins', { message: `Need at least ${coinsPerMinute} coins to call` });
+          socket.emit('insufficient_coins', { 
+            message: `Need at least ${coinsPerMinute} coins to call`,
+            required: coinsPerMinute,
+            current: menUser.coins
+          });
           return;
         }
 
@@ -166,7 +208,9 @@ export const setupSocketHandlers = (io) => {
           return;
         }
 
-        if (!womanUser.socketId) {
+        // Get woman's socket
+        const womanSocketId = userToSocketMap.get(womanId.toString());
+        if (!womanSocketId) {
           socket.emit('call_failed', { message: 'User is not connected' });
           return;
         }
@@ -181,7 +225,7 @@ export const setupSocketHandlers = (io) => {
         const tempCallId = `call_${Date.now()}_${menUserId}_${womanId}`;
 
         // Send incoming call notification to woman
-        io.to(womanUser.socketId).emit('incoming_call', {
+        io.to(womanSocketId).emit('incoming_call', {
           callId: tempCallId,
           caller: {
             _id: menUser._id,
@@ -194,15 +238,16 @@ export const setupSocketHandlers = (io) => {
 
         logger.info(`📞 Incoming call sent to ${womanId}, tempCallId: ${tempCallId}`);
 
-        // Set 30 second timeout
+        // Set 30 second timeout for no answer
         const callTimeout = setTimeout(() => {
           const pending = pendingCallsMap.get(tempCallId);
           if (pending) {
             logger.info(`📞 Call timeout: ${tempCallId}`);
             socket.emit('no_answer', { message: 'No answer' });
             
-            if (womanUser.socketId) {
-              io.to(womanUser.socketId).emit('call_missed', { callId: tempCallId });
+            const womanSock = io.sockets.sockets.get(pending.womanSocketId);
+            if (womanSock) {
+              womanSock.emit('call_missed', { callId: tempCallId });
             }
             
             pendingCallsMap.delete(tempCallId);
@@ -213,7 +258,7 @@ export const setupSocketHandlers = (io) => {
           menSocketId: socket.id,
           menUserId: menUserId,
           womanId: womanId,
-          womanSocketId: womanUser.socketId,
+          womanSocketId: womanSocketId,
           timeout: callTimeout,
         });
 
@@ -268,8 +313,14 @@ export const setupSocketHandlers = (io) => {
           return;
         }
 
-        // Create call record in database
-        const call = await callService.createCall(menUserId, womanUserId);
+        // Create call record in database - status ONGOING
+        const call = await Call.create({
+          menUserId: menUserId,
+          womenUserId: womanUserId,
+          startTime: new Date(),
+          status: CALL_STATUS.ONGOING,
+        });
+
         const callIdStr = call._id.toString();
 
         // Mark woman as busy
@@ -282,25 +333,26 @@ export const setupSocketHandlers = (io) => {
         });
 
         // Store call info on sockets
-        socket.activeCall = { callId: call._id, remoteSocketId: menSocketId, remoteUserId: menUserId };
-        menSocket.activeCall = { callId: call._id, remoteSocketId: socket.id, remoteUserId: womanUserId };
+        socket.activeCall = { 
+          callId: call._id, 
+          remoteSocketId: menSocketId, 
+          remoteUserId: menUserId,
+          isCaller: false
+        };
+        menSocket.activeCall = { 
+          callId: call._id, 
+          remoteSocketId: socket.id, 
+          remoteUserId: womanUserId,
+          isCaller: true
+        };
 
         delete menSocket.pendingCallId;
 
-        // Notify CALLER (men) that call was answered - THIS triggers WebRTC initialization
-        menSocket.emit('call_answered', { 
+        // *** CRITICAL: Tell WOMAN to prepare WebRTC first ***
+        // Woman (receiver) needs to be ready BEFORE caller sends offer
+        socket.emit('prepare_webrtc', {
           callId: call._id,
-          woman: {
-            _id: womanUser._id,
-            name: womanUser.name,
-            profileImage: womanUser.profileImage,
-          }
-        });
-
-        // Both parties get call_connected
-        menSocket.emit('call_connected', { callId: call._id });
-        socket.emit('call_connected', {
-          callId: call._id,
+          remoteUserId: menUserId.toString(),
           caller: {
             _id: menUser._id,
             name: menUser.name,
@@ -308,83 +360,145 @@ export const setupSocketHandlers = (io) => {
           }
         });
 
-        // ========== START COIN DEDUCTION (Every 60 seconds) ==========
-        const coinsPerMinute = config.app?.coinsPerMinute || 10;
-        
-        const coinInterval = setInterval(async () => {
-          try {
-            const currentMenUser = await User.findById(menUserId);
-            
-            if (!currentMenUser || currentMenUser.coins < coinsPerMinute) {
-              logger.info(`💰 Insufficient coins for call ${callIdStr}, ending call`);
-              clearInterval(coinInterval);
-              
-              const activeCall = activeCallsMap.get(womanUserId.toString());
-              if (activeCall) {
-                activeCall.coinIntervalId = null;
-              }
-              
-              await endCallAndNotify(io, call._id, menSocket, socket, 'insufficient_coins');
-              return;
-            }
+        // *** After 500ms, tell CALLER to create offer ***
+        // This gives receiver time to setup peer connection
+        setTimeout(() => {
+          menSocket.emit('call_answered', { 
+            callId: call._id,
+            remoteUserId: womanUserId.toString(),
+            woman: {
+              _id: womanUser._id,
+              name: womanUser.name,
+              profileImage: womanUser.profileImage,
+            },
+            // Tell caller they should initiate WebRTC now
+            shouldCreateOffer: true
+          });
+        }, 500);
 
-            // Deduct from men
-            const updatedMen = await User.findByIdAndUpdate(
-              menUserId, 
-              { $inc: { coins: -coinsPerMinute } },
-              { new: true }
-            );
-
-            // Add to women
-            const updatedWoman = await User.findByIdAndUpdate(
-              womanUserId, 
-              { $inc: { coins: coinsPerMinute } },
-              { new: true }
-            );
-
-            // Update call record
-            await Call.findByIdAndUpdate(call._id, {
-              $inc: { 
-                duration: 60,
-                coinsUsed: coinsPerMinute,
-                coinsEarned: coinsPerMinute
-              }
-            });
-
-            logger.info(`💰 Coin transfer: Men ${menUserId} (-${coinsPerMinute}) -> Women ${womanUserId} (+${coinsPerMinute})`);
-
-            // Notify men about coin update
-            if (menSocket?.connected) {
-              menSocket.emit('coins_updated', { 
-                coins: updatedMen.coins,
-                deducted: coinsPerMinute
-              });
-            }
-
-            // Notify women about earnings
-            if (socket?.connected) {
-              socket.emit('coins_updated', { 
-                coins: updatedWoman.coins,
-                earned: coinsPerMinute
-              });
-            }
-
-          } catch (error) {
-            logger.error('Coin deduction error:', error);
-          }
-        }, 60000);
-
-        // Store interval ID
-        const activeCall = activeCallsMap.get(womanUserId.toString());
-        if (activeCall) {
-          activeCall.coinIntervalId = coinInterval;
-        }
-
-        logger.info(`📞 Call ${callIdStr} connected: ${menUserId} <-> ${womanUserId}`);
+        logger.info(`📞 Call ${callIdStr} - Woman preparing, Caller will be notified shortly`);
 
       } catch (error) {
         logger.error('answer_call error:', error);
         socket.emit('call_failed', { message: 'Failed to answer call' });
+      }
+    });
+
+    // ========== WEBRTC READY (Woman signals she's ready for offer) ==========
+    socket.on('webrtc_ready', async (data) => {
+      try {
+        const { callId } = data;
+        
+        if (!socket.activeCall) {
+          logger.warn('webrtc_ready: No active call');
+          return;
+        }
+
+        const menSocket = io.sockets.sockets.get(socket.activeCall.remoteSocketId);
+        if (menSocket) {
+          // Now tell caller to create and send the WebRTC offer
+          menSocket.emit('create_offer', { callId });
+          logger.info(`📞 Call ${callId}: Woman ready, telling caller to create offer`);
+        }
+      } catch (error) {
+        logger.error('webrtc_ready error:', error);
+      }
+    });
+
+    // ========== CALL CONNECTED (Both sides have audio) ==========
+    socket.on('call_connected_ack', async (data) => {
+      try {
+        const { callId } = data;
+        
+        if (!socket.activeCall || socket.activeCall.callId.toString() !== callId) {
+          return;
+        }
+
+        // If this is the first connection ack, start coin deduction
+        const activeCall = activeCallsMap.get(socket.activeCall.remoteUserId?.toString()) ||
+                          Array.from(activeCallsMap.values()).find(c => c.callId === callId);
+
+        if (activeCall && !activeCall.coinIntervalId) {
+          const coinsPerMinute = config.app?.coinsPerMinute || 40;
+          
+          logger.info(`📞 Call ${callId}: Starting coin deduction (${coinsPerMinute}/min)`);
+
+          // Start coin deduction
+          const coinInterval = setInterval(async () => {
+            try {
+              const call = await Call.findById(callId);
+              if (!call || call.status !== CALL_STATUS.ONGOING) {
+                clearInterval(coinInterval);
+                return;
+              }
+
+              const currentMenUser = await User.findById(call.menUserId);
+              
+              if (!currentMenUser || currentMenUser.coins < coinsPerMinute) {
+                logger.info(`💰 Insufficient coins for call ${callId}, ending call`);
+                clearInterval(coinInterval);
+                await endCallAndNotify(io, callId, 'insufficient_coins');
+                return;
+              }
+
+              // Deduct from men
+              const updatedMen = await User.findByIdAndUpdate(
+                call.menUserId, 
+                { $inc: { coins: -coinsPerMinute } },
+                { new: true }
+              );
+
+              // Add to women
+              const updatedWoman = await User.findByIdAndUpdate(
+                call.womenUserId, 
+                { $inc: { coins: coinsPerMinute } },
+                { new: true }
+              );
+
+              // Update call record
+              await Call.findByIdAndUpdate(callId, {
+                $inc: { coinsUsed: coinsPerMinute }
+              });
+
+              logger.info(`💰 Coin transfer: Men ${call.menUserId} (-${coinsPerMinute}) -> Women ${call.womenUserId} (+${coinsPerMinute})`);
+
+              // Notify men about coin update
+              const menSock = getSocketByUserId(io, call.menUserId);
+              if (menSock?.connected) {
+                menSock.emit('coins_updated', { 
+                  coins: updatedMen.coins,
+                  deducted: coinsPerMinute
+                });
+              }
+
+              // Notify women about earnings
+              const womanSock = getSocketByUserId(io, call.womenUserId);
+              if (womanSock?.connected) {
+                womanSock.emit('coins_updated', { 
+                  coins: updatedWoman.coins,
+                  earned: coinsPerMinute
+                });
+              }
+
+            } catch (error) {
+              logger.error('Coin deduction error:', error);
+            }
+          }, 60000); // Every 60 seconds
+
+          activeCall.coinIntervalId = coinInterval;
+        }
+
+        // Emit call_connected to both parties
+        const remoteSocket = io.sockets.sockets.get(socket.activeCall.remoteSocketId);
+        socket.emit('call_connected', { callId });
+        if (remoteSocket) {
+          remoteSocket.emit('call_connected', { callId });
+        }
+
+        logger.info(`📞 Call ${callId} fully connected`);
+
+      } catch (error) {
+        logger.error('call_connected_ack error:', error);
       }
     });
 
@@ -424,8 +538,9 @@ export const setupSocketHandlers = (io) => {
         logger.info(`📞 End call: ${callId}, reason: ${reason}`);
 
         if (socket.activeCall) {
-          const remoteSocket = io.sockets.sockets.get(socket.activeCall.remoteSocketId);
-          await endCallAndNotify(io, socket.activeCall.callId, socket, remoteSocket, reason);
+          await endCallAndNotify(io, socket.activeCall.callId, reason);
+        } else if (callId) {
+          await endCallAndNotify(io, callId, reason);
         }
 
       } catch (error) {
@@ -433,7 +548,7 @@ export const setupSocketHandlers = (io) => {
       }
     });
 
-    // ========== WEBRTC SIGNALING - CRITICAL FOR AUDIO ==========
+    // ========== WEBRTC SIGNALING ==========
     
     // WebRTC Offer (Caller -> Receiver)
     socket.on('webrtc_offer', async (data) => {
@@ -442,16 +557,16 @@ export const setupSocketHandlers = (io) => {
         
         logger.info(`🎥 WebRTC OFFER from ${socket.userId} to ${targetUserId}`);
 
-        const targetUser = await User.findById(targetUserId);
-        if (targetUser?.socketId) {
-          io.to(targetUser.socketId).emit('webrtc_offer', {
+        const targetSocketId = userToSocketMap.get(targetUserId?.toString());
+        if (targetSocketId) {
+          io.to(targetSocketId).emit('webrtc_offer', {
             offer,
             fromUserId: socket.userId,
-            from: socket.userId, // Include both for compatibility
           });
           logger.info(`🎥 WebRTC OFFER forwarded to ${targetUserId}`);
         } else {
           logger.warn(`🎥 Target user ${targetUserId} not connected`);
+          socket.emit('call_failed', { message: 'Remote user disconnected' });
         }
 
       } catch (error) {
@@ -466,12 +581,11 @@ export const setupSocketHandlers = (io) => {
         
         logger.info(`🎥 WebRTC ANSWER from ${socket.userId} to ${targetUserId}`);
 
-        const targetUser = await User.findById(targetUserId);
-        if (targetUser?.socketId) {
-          io.to(targetUser.socketId).emit('webrtc_answer', {
+        const targetSocketId = userToSocketMap.get(targetUserId?.toString());
+        if (targetSocketId) {
+          io.to(targetSocketId).emit('webrtc_answer', {
             answer,
             fromUserId: socket.userId,
-            from: socket.userId,
           });
           logger.info(`🎥 WebRTC ANSWER forwarded to ${targetUserId}`);
         } else {
@@ -488,12 +602,11 @@ export const setupSocketHandlers = (io) => {
       try {
         const { candidate, targetUserId } = data;
 
-        const targetUser = await User.findById(targetUserId);
-        if (targetUser?.socketId) {
-          io.to(targetUser.socketId).emit('ice_candidate', {
+        const targetSocketId = userToSocketMap.get(targetUserId?.toString());
+        if (targetSocketId) {
+          io.to(targetSocketId).emit('ice_candidate', {
             candidate,
             fromUserId: socket.userId,
-            from: socket.userId,
           });
         }
 
@@ -514,8 +627,7 @@ export const setupSocketHandlers = (io) => {
 
         // Handle active call cleanup
         if (socket.activeCall) {
-          const remoteSocket = io.sockets.sockets.get(socket.activeCall.remoteSocketId);
-          await endCallAndNotify(io, socket.activeCall.callId, socket, remoteSocket, 'disconnected');
+          await endCallAndNotify(io, socket.activeCall.callId, 'disconnected');
         }
 
         // Handle pending call cleanup
@@ -527,11 +639,17 @@ export const setupSocketHandlers = (io) => {
           pendingCallsMap.delete(socket.pendingCallId);
         }
 
+        // Remove socket mappings
+        const userId = socketToUserMap.get(socket.id);
+        if (userId) {
+          userToSocketMap.delete(userId.toString());
+        }
+        socketToUserMap.delete(socket.id);
+
         // Update user online status
         if (socket.userId) {
           await User.findByIdAndUpdate(socket.userId, {
             isOnline: false,
-            isAvailable: false,
             socketId: null
           });
 
